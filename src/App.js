@@ -1,149 +1,65 @@
-// import './App.css';
 import React, { useState, useEffect } from "react";
-import { formatTime, formatTimeForTable, getTotalWorkedDuration, getCurrentTime } from "./utils";
-import Header from "./components/Header";
-import ButtonStartWork from "./components/ButtonStartWork";
-import Timer from "./components/Timer";
-import ButtonTakeBreakResumeWorking from "./components/ButtonTakeBreakResumeWorking";
-import ButtonFinishDay from "./components/ButtonFinishDay";
-import FinalReport from "./components/FinalReport";
-import LogTable from "./components/LogTable";
-
-
-
-// --------------------------------------------------
-// COMPONENT
-// --------------------------------------------------
-
-
-
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
-//
-//  *** GLOBAL APPLICATION ***
-//
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
-
+import { formatTime, formatTimeForTable, getCurrentTime } from './utils';
+import Header from './components/Header';
+import ButtonStartWork from './components/ButtonStartWork';
+import Timer from './components/Timer';
+import ButtonTakeBreakResumeWorking from './components/ButtonTakeBreakResumeWorking';
+import ButtonFinishDay from './components/ButtonFinishDay';
+import FinalReport from './components/FinalReport';
+import LogTable from './components/LogTable';
 
 function App() {
+  const [appState, setAppState] = useState("idle");
   const [isWorking, setIsWorking] = useState(false);
   const [timer, setTimer] = useState(0);
-  const [intervalId, setIntervalId] = useState(null);
-  const [started, setStarted] = useState(false);
   const [logs, setLogs] = useState([]);
-  const [eventStartTime, setEventStartTime] = useState(null);
 
-useEffect(() => {
-  if (started) {
-    const id = setInterval(() => {
-      setTimer(timer => timer + 1)
-    }, 1000)
-    setIntervalId(id)
-  }
+  useEffect(() => {
+    let intervalId;
+    if (appState === "working" || appState === "onBreak") {
+      intervalId = setInterval(() => {
+        setTimer((timer) => timer + 1);
+      }, 1000);
+    }
 
-  return () => clearInterval(intervalId)
-}, [started])
-
-  const [showIsWorking, setShowIsWorking] = useState(false);
-  const [showButtonStartWork, setShowButtonStartWork] = useState(true);
-  const [showButtonTakeBreakResumeWorking, setShowButtonTakeBreakResumeWorking] = useState(false);
-  const [showButtonFinishDay, setShowButtonFinishDay] = useState(false);
-  const [showFinalReport, setShowFinalReport] = useState(false);
-  const [showLogTable, setShowLogTable] = useState(false);
-  
-
-
-
-  // --------------------------------------------------
-  // METHOD
-  // --------------------------------------------------
-
-
-  // --------------------------------------------------
-  // METHOD
-  // --------------------------------------------------
-
+    return () => clearInterval(intervalId);
+  }, [appState]);
 
   const logEvent = (type) => {
     const startedAt = getCurrentTime();
     const duration = formatTimeForTable(timer);
     setLogs((prevLogs) => [...prevLogs, { startedAt, type, duration }]);
   };
-  
-  
-  // --------------------------------------------------
-  // METHOD
-  // --------------------------------------------------
-
 
   const startWork = () => {
     setIsWorking(true);
-    setStarted(true);
-    setEventStartTime(getCurrentTime());
-  
-    setShowIsWorking(true);
-    setShowButtonStartWork(false);
-    setShowButtonTakeBreakResumeWorking(true);
-    setShowButtonFinishDay(true);
-  
+    setAppState("working");
   };
-
-  // --------------------------------------------------
-  // METHOD
-  // --------------------------------------------------
-
 
   const changeState = () => {
-    logEvent(isWorking ? 'work' : 'break');
+    logEvent(isWorking ? "work" : "break");
     setIsWorking(!isWorking);
-    setEventStartTime(timer);
+    setAppState(isWorking ? "onBreak" : "working");
     setTimer(0);
-
-    setShowLogTable(true)
   };
-
-  // --------------------------------------------------
-  // METHOD
-  // --------------------------------------------------
-
 
   const finishDay = () => {
-    logEvent(isWorking ? 'work' : 'break');
-    setStarted(false);
-    setShowButtonTakeBreakResumeWorking(false);
-    setShowButtonFinishDay(false);
-    setShowIsWorking(false);
-    setShowFinalReport(true);
+    logEvent(isWorking ? "work" : "break");
+    setAppState("finished");
   };
 
-  /// --------------------------------------------------
-  // METHOD
-  // --------------------------------------------------
-
-
-   
-
-  // --------------------------------------------------
-  // RETURN
-  // --------------------------------------------------
-
   return (
-    <div className="App">
-      {showIsWorking && <Header isWorking={isWorking} />}
-      {showButtonStartWork && <ButtonStartWork startWork={startWork} isWorking={isWorking} />}
-      {started && <Timer timer={timer}/>}
-      {showButtonTakeBreakResumeWorking && <ButtonTakeBreakResumeWorking isWorking={isWorking} changeState={changeState}/>}
-      {showButtonFinishDay && <ButtonFinishDay finishDay={finishDay}/>}
-      {showFinalReport && <FinalReport logs={logs} />}
-      {showLogTable && <LogTable logs={logs} />}
-      {/* <Timer /> */}
-
-      {/* <Button_FinishDay />
-      <LogTable />  */}
-    </div>
+    <React.Fragment>
+      {(appState === "working" || appState === "onBreak") && <Header isWorking={isWorking} />}
+      {appState === "idle" && <ButtonStartWork startWork={startWork} />}
+      {(appState === "working" || appState === "onBreak") && <Timer timer={timer} />}
+      {(appState === "working" || appState === "onBreak") && (
+        <ButtonTakeBreakResumeWorking isWorking={isWorking} changeState={changeState} />
+      )}
+      {(appState === "working" || appState === "onBreak") && <ButtonFinishDay finishDay={finishDay} />}
+      {appState === "finished" && <FinalReport logs={logs} />}
+      {appState !== "idle" && <LogTable logs={logs} />}
+    </React.Fragment>
   );
 }
 
