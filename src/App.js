@@ -13,6 +13,7 @@ function App() {
   const [isWorking, setIsWorking] = useState(false);
   const [timer, setTimer] = useState(0);
   const [logs, setLogs] = useState([]);
+  const [showLogTable, setShowLogTable] = useState(false);
 
   useEffect(() => {
     let intervalId;
@@ -41,6 +42,7 @@ function App() {
     setIsWorking(!isWorking);
     setAppState(isWorking ? "onBreak" : "working");
     setTimer(0);
+    setShowLogTable(true);
   };
 
   const finishDay = () => {
@@ -58,7 +60,7 @@ function App() {
       )}
       {(appState === "working" || appState === "onBreak") && <ButtonFinishDay finishDay={finishDay} />}
       {appState === "finished" && <FinalReport logs={logs} />}
-      {appState !== "idle" && <LogTable logs={logs} />}
+      {showLogTable && <LogTable logs={logs} />}
     </React.Fragment>
   );
 }
