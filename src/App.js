@@ -29,6 +29,57 @@ import React, { useState, useEffect } from "react";
 //     2. log is recorded
 //     3. message is changed to “Congrats! You worked {totalWorkedTime} today”
 
+
+const formatTime = (timeInSeconds) => {
+  const hours = Math.floor(timeInSeconds / 3600);
+  const minutes = Math.floor((timeInSeconds % 3600) / 60);
+  const seconds = timeInSeconds % 60;
+
+  const hourPart = hours.toString().padStart(2, '0');
+  const minutePart = minutes.toString().padStart(2, '0');
+  const secondPart = seconds.toString().padStart(2, '0');
+
+  return `${hourPart}:${minutePart}:${secondPart}`;
+};
+
+const formatTimeForTable = (timeInSeconds) => {
+  const hours = Math.floor(timeInSeconds / 3600);
+  const minutes = Math.floor((timeInSeconds % 3600) / 60);
+  const seconds = timeInSeconds % 60;
+
+  const hourPart = hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''}` : '';
+  const minutePart = minutes > 0 ? `${minutes} min${minutes > 1 ? 's' : ''}` : '';
+  const secondPart = seconds > 0 ? `${seconds} sec${seconds > 1 ? 's' : ''}` : '';
+
+  const formattedTime = [hourPart, minutePart, secondPart].filter(part => part !== '').join(', ');
+
+  return formattedTime === '' ? '0 secs' : formattedTime;
+};
+
+
+const getTotalWorkedDuration = (logs) => {
+  return logs.reduce((total, log) => {
+    if (log.type === "work") {
+      const durationParts = log.duration.split(', ');
+      let durationInSeconds = 0;
+      
+      durationParts.forEach(part => {
+        const [value, unit] = part.split(' ');
+        if (unit.startsWith('hour')) {
+          durationInSeconds += parseInt(value, 10) * 3600;
+        } else if (unit.startsWith('min')) {
+          durationInSeconds += parseInt(value, 10) * 60;
+        } else if (unit.startsWith('sec')) {
+          durationInSeconds += parseInt(value, 10);
+        }
+      });
+
+      return total + durationInSeconds;
+    }
+    return total;
+  }, 0);
+};
+
 // --------------------------------------------------
 // COMPONENT
 // --------------------------------------------------
@@ -51,9 +102,10 @@ const ButtonStartWork = ({ startWork }) => {
 // COMPONENT
 // --------------------------------------------------
 
-  const Timer = ({ timer }) => {
-    return <p>{timer}</p>
-  }
+const Timer = ({ timer }) => {
+  const formattedTime = formatTime(timer);
+  return <p>{formattedTime}</p>
+}
 
 // --------------------------------------------------
 // COMPONENT
@@ -69,22 +121,63 @@ const ButtonTakeBreakResumeWorking = ({ isWorking, changeState }) => {
 const ButtonFinishDay = ({ finishDay }) => {
   return <button onClick = {finishDay}>Finish the day</button>;
 }
+
 // --------------------------------------------------
 // COMPONENT
 // --------------------------------------------------
 
-const FinalReport = () => {
-  return <p>Congrats! You worked XXX today</p>;
-}
+const FinalReport = ({ logs }) => {
+  const totalWorkedDuration = formatTimeForTable(getTotalWorkedDuration(logs));
+  return <p>You worked {totalWorkedDuration} today</p>;
+};
 
 
-// const LogTable = ({logs}) => {}
+
+// --------------------------------------------------
+// COMPONENT
+// --------------------------------------------------
+
+const LogTable = ({ logs }) => {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Started At</th>
+          <th>Type</th>
+          <th>Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {logs.map((log, index) => (
+          <tr key={index}>
+            <td>{log.startedAt}</td>
+            <td>{log.type}</td>
+            <td>{log.duration}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+// --------------------------------------------------
+// --------------------------------------------------
+// --------------------------------------------------
+//
+//  *** GLOBAL APPLICATION ***
+//
+// --------------------------------------------------
+// --------------------------------------------------
+// --------------------------------------------------
+
 
 function App() {
   const [isWorking, setIsWorking] = useState(false);
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
   const [started, setStarted] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [eventStartTime, setEventStartTime] = useState(null);
 
 useEffect(() => {
   if (started) {
@@ -102,38 +195,93 @@ useEffect(() => {
   const [showButtonTakeBreakResumeWorking, setShowButtonTakeBreakResumeWorking] = useState(false);
   const [showButtonFinishDay, setShowButtonFinishDay] = useState(false);
   const [showFinalReport, setShowFinalReport] = useState(false);
+  const [showLogTable, setShowLogTable] = useState(false);
   
 
   // const [logs, setLogs] = useState([])
   // const [totalWorkedTime, setTotalWorkedTime] = useState(0)
   // const [totalBreakTime, setTotalBreakTime] = useState(0)
 
+
+
   // --------------------------------------------------
-  // METHODS
+  // METHOD
   // --------------------------------------------------
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+  // --------------------------------------------------
+  // METHOD
+  // --------------------------------------------------
+
+
+  const logEvent = (type) => {
+    const startedAt = getCurrentTime();
+    const duration = formatTimeForTable(timer);
+    setLogs((prevLogs) => [...prevLogs, { startedAt, type, duration }]);
+  };
+  
+  
+  // --------------------------------------------------
+  // METHOD
+  // --------------------------------------------------
+
 
   const startWork = () => {
     setIsWorking(true);
     setStarted(true);
-
+    setEventStartTime(getCurrentTime());
+  
     setShowIsWorking(true);
     setShowButtonStartWork(false);
     setShowButtonTakeBreakResumeWorking(true);
     setShowButtonFinishDay(true);
+  
   };
 
+  // --------------------------------------------------
+  // METHOD
+  // --------------------------------------------------
+
+
   const changeState = () => {
+    logEvent(isWorking ? 'work' : 'break');
     setIsWorking(!isWorking);
-    setTimer(0)
-  }
+    setEventStartTime(timer);
+    setTimer(0);
+
+    setShowLogTable(true)
+  };
+
+  // --------------------------------------------------
+  // METHOD
+  // --------------------------------------------------
+
 
   const finishDay = () => {
+    logEvent(isWorking ? 'work' : 'break');
     setStarted(false);
     setShowButtonTakeBreakResumeWorking(false);
     setShowButtonFinishDay(false);
     setShowIsWorking(false);
     setShowFinalReport(true);
-  }
+  };
+
+  /// --------------------------------------------------
+  // METHOD
+  // --------------------------------------------------
+
+
+   
+
+  // --------------------------------------------------
+  // RETURN
+  // --------------------------------------------------
 
   return (
     <div className="App">
@@ -142,8 +290,8 @@ useEffect(() => {
       {started && <Timer timer={timer}/>}
       {showButtonTakeBreakResumeWorking && <ButtonTakeBreakResumeWorking isWorking={isWorking} changeState={changeState}/>}
       {showButtonFinishDay && <ButtonFinishDay finishDay={finishDay}/>}
-      {showFinalReport && <FinalReport />}
-
+      {showFinalReport && <FinalReport logs={logs} />}
+      {showLogTable && <LogTable logs={logs} />}
       {/* <Timer /> */}
 
       {/* <Button_FinishDay />
