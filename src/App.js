@@ -1,63 +1,13 @@
 // import './App.css';
 import React, { useState, useEffect } from "react";
 import { formatTime, formatTimeForTable, getTotalWorkedDuration, getCurrentTime } from "./utils";
-
-
-
-
-
-
-
-// --------------------------------------------------
-// COMPONENT
-// --------------------------------------------------
-
-const Header = ({ isWorking }) => {
-  return (
-    <header className="App-header">
-      <h1>{isWorking ? "Working" : "Not Working"}</h1>
-    </header>
-  );
-};
-// --------------------------------------------------
-// COMPONENT
-// --------------------------------------------------
-const ButtonStartWork = ({ startWork }) => {
-  return <button onClick={startWork}>Start Work</button>;
-};
-
-// --------------------------------------------------
-// COMPONENT
-// --------------------------------------------------
-
-const Timer = ({ timer }) => {
-  const formattedTime = formatTime(timer);
-  return <p>{formattedTime}</p>
-}
-
-// --------------------------------------------------
-// COMPONENT
-// --------------------------------------------------
-
-const ButtonTakeBreakResumeWorking = ({ isWorking, changeState }) => {
-  return <button onClick={changeState}>{isWorking ? "Take a break" : "Resume working"}</button>;
-};
-// --------------------------------------------------
-// COMPONENT
-// --------------------------------------------------
-
-const ButtonFinishDay = ({ finishDay }) => {
-  return <button onClick = {finishDay}>Finish the day</button>;
-}
-
-// --------------------------------------------------
-// COMPONENT
-// --------------------------------------------------
-
-const FinalReport = ({ logs }) => {
-  const totalWorkedDuration = formatTimeForTable(getTotalWorkedDuration(logs));
-  return <p>You worked {totalWorkedDuration} today</p>;
-};
+import Header from "./components/Header";
+import ButtonStartWork from "./components/ButtonStartWork";
+import Timer from "./components/Timer";
+import ButtonTakeBreakResumeWorking from "./components/ButtonTakeBreakResumeWorking";
+import ButtonFinishDay from "./components/ButtonFinishDay";
+import FinalReport from "./components/FinalReport";
+import LogTable from "./components/LogTable";
 
 
 
@@ -65,28 +15,7 @@ const FinalReport = ({ logs }) => {
 // COMPONENT
 // --------------------------------------------------
 
-const LogTable = ({ logs }) => {
-  return (
-    <table>
-      <thead>
-        <tr>
-          <th>Started At</th>
-          <th>Type</th>
-          <th>Duration</th>
-        </tr>
-      </thead>
-      <tbody>
-        {logs.map((log, index) => (
-          <tr key={index}>
-            <td>{log.startedAt}</td>
-            <td>{log.type}</td>
-            <td>{log.duration}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-};
+
 
 // --------------------------------------------------
 // --------------------------------------------------
@@ -125,10 +54,6 @@ useEffect(() => {
   const [showFinalReport, setShowFinalReport] = useState(false);
   const [showLogTable, setShowLogTable] = useState(false);
   
-
-  // const [logs, setLogs] = useState([])
-  // const [totalWorkedTime, setTotalWorkedTime] = useState(0)
-  // const [totalBreakTime, setTotalBreakTime] = useState(0)
 
 
 
