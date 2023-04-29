@@ -3,6 +3,7 @@ import { formatTime, formatTimeForTable, getCurrentTime } from './utils';
 import Header from './components/Header';
 import ButtonStartWork from './components/ButtonStartWork';
 import Timer from './components/Timer';
+import { useTimer } from './hooks/useTimer';
 import ButtonTakeBreakResumeWorking from './components/ButtonTakeBreakResumeWorking';
 import ButtonFinishDay from './components/ButtonFinishDay';
 import FinalReport from './components/FinalReport';
@@ -14,23 +15,12 @@ import axios from "axios";
 function App() {
   const [appState, setAppState] = useState("idle");
   const [isWorking, setIsWorking] = useState(false);
-  const [timer, setTimer] = useState(0);
+  const [timer, setTimer] = useTimer(0, appState);
   const [logs, setLogs] = useState([]);
   const [workingOn, setWorkingOn] = useState("");
   const [dayFinished, setDayFinished] = useState(false);
-
   const [showLogTable, setShowLogTable] = useState(false);
 
-  useEffect(() => {
-    let intervalId;
-    if (appState === "working" || appState === "onBreak") {
-      intervalId = setInterval(() => {
-        setTimer((timer) => timer + 1);
-      }, 1000);
-    }
-
-    return () => clearInterval(intervalId);
-  }, [appState]);
 
   useEffect(() => {
     if (dayFinished) {
