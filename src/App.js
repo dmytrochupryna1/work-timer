@@ -38,9 +38,7 @@ function App() {
           console.error("Error saving user session:", error);
         }
       })();
-  
-      setDayFinished(false);
-    }
+      }
   }, [logs, dayFinished]);
   
 
