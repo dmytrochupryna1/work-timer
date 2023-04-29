@@ -5,6 +5,7 @@ const LogTable = ({ logs }) => {
           <tr>
             <th>Started At</th>
             <th>Type</th>
+            <th>Activity</th>
             <th>Duration</th>
           </tr>
         </thead>
@@ -13,6 +14,7 @@ const LogTable = ({ logs }) => {
             <tr key={index}>
               <td>{log.startedAt}</td>
               <td>{log.type}</td>
+              <td>{log.workingOn}</td>
               <td>{log.duration}</td>
             </tr>
           ))}
