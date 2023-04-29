@@ -9,6 +9,7 @@ import ButtonFinishDay from './components/ButtonFinishDay';
 import FinalReport from './components/FinalReport';
 import LogTable from './components/LogTable';
 import DateDisplay from './components/DateDisplay';
+import ResetButton from './components/ResetButton';
 import axios from "axios";
 
 
@@ -69,7 +70,18 @@ function App() {
     setAppState("finished");
     setWorkingOn("");
     setDayFinished(true)
+    setShowLogTable(true);
 
+  };
+  
+  const resetData = () => {
+    setAppState("idle");
+    setIsWorking(false);
+    setTimer(0);
+    setLogs([]);
+    setWorkingOn("");
+    setDayFinished(false);
+    setShowLogTable(false);
   };
   
   
@@ -90,6 +102,7 @@ function App() {
       )}
       {(appState === "working" || appState === "onBreak") && <ButtonFinishDay finishDay={finishDay} />}
       {appState === "finished" && <FinalReport logs={logs} />}
+      {appState === "finished" && <ResetButton resetData={resetData} />}
       {showLogTable && <LogTable logs={logs} />}
     </React.Fragment>
   );
