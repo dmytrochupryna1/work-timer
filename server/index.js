@@ -23,16 +23,6 @@ mongoose
       console.log("Connected to MongoDB successfully");
     })
 
-// app.use((req, res, next) => {
-//   if (typeof req.body.logs === 'string') {
-//     try {
-//       req.body.logs = JSON.parse(req.body.logs);
-//     } catch (e) {
-//       return res.status(400).send('Invalid logs data');
-//     }
-//   }
-//   next();
-// });
     
 
 
